@@ -37,7 +37,7 @@ export default function TabLayout() {
         options={{
           title: 'Maps',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'earth' : 'code-slash-outline'} color={color} />
+            <TabBarIcon name={focused ? 'earth' : 'earth-outline'} color={color} />
           ),
         }}
       />
