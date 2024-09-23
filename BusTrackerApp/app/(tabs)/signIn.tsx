@@ -1,48 +1,130 @@
-
-import React from 'react'
+import React from 'react';
+import {useCallback, useEffect} from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Image, Platform, View , Text, TextInput, ViewBase} from 'react-native';
-import {Button} from '@rneui/themed';
+import { StyleSheet, Image, Platform, View , Text, TextInput, ViewBase, Button} from 'react-native';
 import { Collapsible } from '@/components/Collapsible';
 import { ExternalLink } from '@/components/ExternalLink';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+// import {openDatabase, SQLiteDatabase, enablePromise} from 'react-native-sqlite-storage';
+// import * as SQLite from 'expo-sqlite';
+import {createTables, connectToDatabase} from '../db/db';
+
+import {
+  enablePromise,
+  openDatabase,
+  SQLiteDatabase
+} from "react-native-sqlite-storage"
 
 
-const signIn = () => {
-    return (
-        <View style  = {styles.body}>
-          <ThemedView style={styles.titleContainer } >
-            <ThemedText type="title" style = {styles.title}>Login</ThemedText>
-          </ThemedView>
-          <ThemedText style = {styles.text}>Please sign in to continue </ThemedText>
-          <TextInput style = {styles.username}>Username</TextInput>
-          <TextInput style = {styles.password}>Password</TextInput>
-          <Button 
-            title = "Login"
-            type = "solid"
-            size = "sm"
-            color = "gray"
-            containerStyle = {{
-              width: 75,
-              marginLeft: 200,
-              marginTop: 300
-            }}
-            />
+export default function signIn() {
+  let db = openDatabase( {name: 'userAccount.db'});
 
 
-          <ThemedText style = {styles.text2}>If you do not have an account create one here </ThemedText>
-         
-        </View>
+
+  // SQLite database functions #1
+ 
+ 
+  useEffect(() => {
+    createTable();
+  }, []);
+
+  // const connectToDatabase = async () => {
+  //   openDatabase(
+  //     { name: "userAccount.db", location: "default" },
+  //     () => {},
+  //     (error) => {
+  //       console.error(error)
+  //       throw Error("Could not connect to database")
+  //     }
+  //   )
+  // }
+
+  const createTable = async () => {
+    // const query_create = `CREATE TABLE IF NOT EXISTS userAccount(
+    //     id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,
+    //   password TEXT NOT NULL
+    // );`;
+    // try {
+    //     db.executeSql(query_create);
+    //   } catch (err) {
+    //     console.log({err});
+    //   }
+    db.transaction(tx => {
+      tx.executeSql(
+        `CREATE TABLE IF NOT EXISTS Users (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          username TEXT NOT NULL,
+          password TEXT NOT NULL
+        );`
       );
+    });
+    };
+
+    const insertData = async () => {
+      // const query_insert = 'INSERT INTO userAccount (name, password) VALUES (?, ?)';
+      // const params = ["xyz", '123'];
+
+      // try {
+      // (await db).executeSql(query_insert, params);
+      // } catch (err) {
+      //   console.log('err', err);
+      // }
+      db.transaction(tx => {
+        tx.executeSql(
+          `INSERT INTO Users (username, password) VALUES (?, ?)`,
+          ['exampleUser', 'securePassword']
+        );
+      });
+    };
+
+    // const deleteData = async () => {
+    //   const query_delete = 'DELETE FROM userAccount WHERE id = ?';
+    //   const params = ['1']
+    
+    //   try {
+    //     (await db).executeSql(query_delete, params);
+    //   } catch (err) {
+    //       console.log('err', err);
+    //   }
+    // };
+    // createTable();
+    // insertData();
+    connectToDatabase();
+    createTables(db);
+  
+
+  //display sign in page
+  return (
+    
+    <View style  = {styles.body}>
+      <ThemedView style={styles.titleContainer } >
+        <ThemedText type="title" style = {styles.title}>Login</ThemedText>
+      </ThemedView>
+      <ThemedText style = {styles.text}>Please sign in to continue </ThemedText>
+      <TextInput style = {styles.username}>Username</TextInput>
+      <TextInput style = {styles.password}>Password</TextInput>
+      <Button 
+        title = "Login"
+        color = "gray"
+        // containerStyle = {{
+        //   width: 75,
+        //   marginLeft: 200,
+        //   marginTop: 300
+        // }}
+        />
+
+
+      <ThemedText style = {styles.text2}>If you do not have an account create one here </ThemedText>
+     
+    </View>
+  );
 }
 
-export default signIn
 
 
-
-
+//CSS styling
 const styles = StyleSheet.create({
     headerImage: {
       color: 'black',
@@ -99,4 +181,5 @@ const styles = StyleSheet.create({
       bottom: 50
     }
   });
-  
+
+
