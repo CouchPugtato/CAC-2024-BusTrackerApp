@@ -29,8 +29,8 @@ export default function App() {
     fetchLocation();
   }, []);
 
-  let latitudeVal;
-  let longitudeVal;
+  let latitudeVal = 0;
+  let longitudeVal = 0;
   let text;
   if (errorMsg) {
     text = errorMsg;
@@ -40,7 +40,6 @@ export default function App() {
     text= `Latitude: ${latitude}\nLongitude: ${longitude}`;
     longitudeVal =  longitude;
     latitudeVal = latitude;
-  
 
   } else {
     text = 'Waiting...';

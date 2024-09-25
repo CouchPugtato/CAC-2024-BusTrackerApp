@@ -8,8 +8,8 @@ import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 // import {openDatabase, SQLiteDatabase, enablePromise} from 'react-native-sqlite-storage';
-// import * as SQLite from 'expo-sqlite';
-import {createTables, connectToDatabase} from '../db/db';
+import * as SQLite from 'expo-sqlite';
+// import {createTables, connectToDatabase} from '../db/db';
 
 import {
   enablePromise,
@@ -18,9 +18,18 @@ import {
 } from "react-native-sqlite-storage"
 
 
-export default function signIn() {
-  let db = openDatabase( {name: 'userAccount.db'});
+export default async function signIn() {
+  
+  //idk wtf im doing
+  let db = openDatabase( {name: 'userAccount.db', location: 'default'}
+    , 
+    () => {console.log('Database opened successfully');},
+    error => {
+      console.error("error opening database: ", error);
+    }
+  );
 
+  
 
 
   // SQLite database functions #1
@@ -30,28 +39,17 @@ export default function signIn() {
     createTable();
   }, []);
 
-  // const connectToDatabase = async () => {
-  //   openDatabase(
-  //     { name: "userAccount.db", location: "default" },
-  //     () => {},
-  //     (error) => {
-  //       console.error(error)
-  //       throw Error("Could not connect to database")
-  //     }
-  //   )
-  // }
-
   const createTable = async () => {
-    // const query_create = `CREATE TABLE IF NOT EXISTS userAccount(
-    //     id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,
-    //   password TEXT NOT NULL
-    // );`;
-    // try {
-    //     db.executeSql(query_create);
-    //   } catch (err) {
-    //     console.log({err});
-    //   }
-    db.transaction(tx => {
+    const query_create = `CREATE TABLE IF NOT EXISTS userAccount(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,
+      password TEXT NOT NULL
+    );`;
+    try {
+        (await db).executeSql(query_create);
+      } catch (err) {
+        console.log({err});
+      }
+    (await db).transaction(tx => {
       tx.executeSql(
         `CREATE TABLE IF NOT EXISTS Users (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -63,15 +61,15 @@ export default function signIn() {
     };
 
     const insertData = async () => {
-      // const query_insert = 'INSERT INTO userAccount (name, password) VALUES (?, ?)';
-      // const params = ["xyz", '123'];
+      const query_insert = 'INSERT INTO userAccount (name, password) VALUES (?, ?)';
+      const params = ["xyz", '123'];
 
-      // try {
-      // (await db).executeSql(query_insert, params);
-      // } catch (err) {
-      //   console.log('err', err);
-      // }
-      db.transaction(tx => {
+      try {
+      (await db).executeSql(query_insert, params);
+      } catch (err) {
+        console.log('err', err);
+      }
+      (await db).transaction(tx => {
         tx.executeSql(
           `INSERT INTO Users (username, password) VALUES (?, ?)`,
           ['exampleUser', 'securePassword']
@@ -79,20 +77,54 @@ export default function signIn() {
       });
     };
 
-    // const deleteData = async () => {
-    //   const query_delete = 'DELETE FROM userAccount WHERE id = ?';
-    //   const params = ['1']
+    const deleteData = async () => {
+      const query_delete = 'DELETE FROM userAccount WHERE id = ?';
+      const params = ['1']
     
-    //   try {
-    //     (await db).executeSql(query_delete, params);
-    //   } catch (err) {
-    //       console.log('err', err);
-    //   }
-    // };
-    // createTable();
-    // insertData();
-    connectToDatabase();
-    createTables(db);
+      try {
+        (await db).executeSql(query_delete, params);
+      } catch (err) {
+          console.log('err', err);
+      }
+    };
+
+    createTable();
+    insertData();
+
+
+  // const db = await SQLite.openDatabaseAsync('userAccount.db');
+
+  // // `execAsync()` is useful for bulk queries when you want to execute altogether.
+  // // Please note that `execAsync()` does not escape parameters and may lead to SQL injection.
+  // await db.execAsync(`
+  // PRAGMA journal_mode = WAL;
+  // CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY NOT NULL, value TEXT NOT NULL, intValue INTEGER);
+  // INSERT INTO test (value, intValue) VALUES ('test1', 123);
+  // INSERT INTO test (value, intValue) VALUES ('test2', 456);
+  // INSERT INTO test (value, intValue) VALUES ('test3', 789);
+  // `);
+  
+  // // `runAsync()` is useful when you want to execute some write operations.
+  // const result = await db.runAsync('INSERT INTO test (value, intValue) VALUES (?, ?)', 'aaa', 100);
+  // console.log(result.lastInsertRowId, result.changes);
+  // await db.runAsync('UPDATE test SET intValue = ? WHERE value = ?', 999, 'aaa'); // Binding unnamed parameters from variadic arguments
+  // await db.runAsync('UPDATE test SET intValue = ? WHERE value = ?', [999, 'aaa']); // Binding unnamed parameters from array
+  // await db.runAsync('DELETE FROM test WHERE value = $value', { $value: 'aaa' }); // Binding named parameters from object
+  
+  // `getFirstAsync()` is useful when you want to get a single row from the database.
+  // const firstRow = await db.getFirstAsync('SELECT * FROM test');
+  // console.log(firstRow.id, firstRow.value, firstRow.intValue);
+  
+  // `getAllAsync()` is useful when you want to get all results as an array of objects.
+  // const allRows = await db.getAllAsync('SELECT * FROM test');
+  // for (const row of allRows) {
+  //   console.log(row.id, row.value, row.intValue);
+  // }
+  
+  // `getEachAsync()` is useful when you want to iterate SQLite query cursor.
+  // for await (const row of db.getEachAsync('SELECT * FROM test')) {
+  //   console.log(row.id, row.value, row.intValue);
+  // }
   
 
   //display sign in page
